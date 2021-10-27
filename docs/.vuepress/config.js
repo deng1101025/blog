@@ -1,4 +1,5 @@
 module.exports = {
+    base: '/blog/',
     lang: 'zh-CN',
     title: '你好， 帅锅 镁铝 ！',
     description: '前端的知识，vue，react，基础，底层',
