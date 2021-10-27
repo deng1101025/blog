@@ -1,4 +1,4 @@
-name: docsd
+name: docs
 
 on:
   # 每当 push 到 main 分支时触发部署
@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  docsd:
+  docs:
     runs-on: ubuntu-latest
 
     steps:
