@@ -1,1 +1,27 @@
-源码解析
+# 从vue的生命周期学习vue的构建过程
+
+## 组件渲染流程
+
+这种方式只能是同步的，不能像react一样实现并发，因为并发会导致当前watcher和当前依赖收集出现对不上的情况
+
+1. 构建ast，并缓存
+2. 通过执行mountComponent，构建一个updateComponent函数（ 函数内是 vm.update(vm.render()), 其中update是diff上树函数，render是生成vnode函数 ）
+3. 也是通过执行mountComponent，将当前watcher push到全局栈targetStack中，并把当前watcher赋值给全局的变量Dep.target，用于以来收集的时候使用（ 即，在dep.depend的时候使用 ）
+4. 生成vnode（ 每次执行的时候都是将缓存的ast和data进行合并生成新的vnode，可以有效提高性能，因为模板编译成ast很消耗性能，所以才进行缓存 ）
+5. 在生成vnode的时候会访问模板里面的响应式数据，即，触发依赖收集（ 执行dep.depend方法 ，depend方法中会访问 全局的Dep.target ，
+    并把当前的依赖收集的实例对象dep 通过全局watcher（ Dep.target ）的addDep push到 当前watcher上， 并且把当前watcher也 addSub到当前dep对象上 ，
+    这种双向的添加是为了让dep上也存在wathcer对象，方便，数据改变的时候通过dep.notify进行派发更新）
+6. 第5不是相互引用，watcher里面有deps。 deps里面有watcher， 有点像双向链表，但是不是纯正的双向链表
+7. 最后，首次会调用mountComponent，会new 一个Watcher实例，在构造函数中会调用watcher的get方法，
+8. watcher的get方法作用就是执行 updateComponent方法
+9. 而updateComponent 方法 就是第2步说的 生成vnode，产生依赖收集，并返回vnode，最后执行update进行diff，上树
+
+10. 当修改data属性，会执行dep的notify方法，从notify
+11. 而notify方法的当前dep对象上是有保存watcher 列表的（ 这就得益于闭包和 前面 watcher和dep的相互引用的好处了 ），所以notify会循环执行watcher列表的update方法进行派发更新。 
+
+
+## 依赖草图
+
+重点是依赖收集，派发更新
+
+![vue草图](./img/dep.png)
